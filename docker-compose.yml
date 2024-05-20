@@ -1,8 +1,6 @@
 version: '3'
 services:
   backend:
-    env_file:
-      - backend_env 
     environment:
       - BASE_OLLAMA_URL=http://ollama_service:11434
       - OLLAMA_MODEL=llama3
@@ -14,8 +12,8 @@ services:
       backend_db: 
         condition: service_healthy
   bot: 
-    env_file:
-      - bot_env
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
     build:
       context: ./bot 
     depends_on: 
