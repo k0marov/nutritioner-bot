@@ -1,0 +1,14 @@
+version: '2.0'
+services:
+  backend:
+    env_file:
+      - backend_env 
+    build:
+      context: ./backend 
+  bot: 
+    env_file:
+      - bot_env
+    build:
+      context: ./bot 
+    depends_on: 
+      - backend
