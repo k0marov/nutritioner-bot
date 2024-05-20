@@ -8,6 +8,8 @@ services:
     depends_on: 
       ollama_pull:
         condition: service_completed_successfully
+      backend_db: 
+        condition: service_healthy
   bot: 
     env_file:
       - bot_env
@@ -15,6 +17,19 @@ services:
       context: ./bot 
     depends_on: 
       - backend
+  backend_db: 
+    image: postgres 
+    env_file: db_env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"] 
+      interval: 5s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    ports: 
+      - 5454:5432 
+    volumes: 
+      - ./db_data:/var/lib/postgresql/data
   ollama_pull: 
     image: curlimages/curl:latest 
     command: [ "curl", "--fail", "-d", '{"name": "llama3:8b"}', "ollama_service:11434/api/pull" ]

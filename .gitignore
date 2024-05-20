@@ -4,4 +4,6 @@
 venv
 backend_env
 bot_env 
+db_env
 ollama_data
+db_data
