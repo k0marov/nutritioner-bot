@@ -4,3 +4,4 @@
 venv
 backend_env
 bot_env 
+ollama_data

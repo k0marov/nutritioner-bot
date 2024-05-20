@@ -1,10 +1,13 @@
-version: '2.0'
+version: '3'
 services:
   backend:
     env_file:
       - backend_env 
     build:
       context: ./backend 
+    depends_on: 
+      ollama_pull:
+        condition: service_completed_successfully
   bot: 
     env_file:
       - bot_env
@@ -12,3 +15,28 @@ services:
       context: ./bot 
     depends_on: 
       - backend
+  ollama_pull: 
+    image: curlimages/curl:latest 
+    command: [ "curl", "--fail", "-d", '{"name": "llama3:8b"}', "ollama_service:11434/api/pull" ]
+    depends_on:
+      ollama_service: 
+        condition: service_healthy
+  ollama_service:
+    image: ollama/ollama:latest
+    ports:
+      - "11435:11434"
+    volumes:
+      - ./ollama_data:/root/.ollama
+    healthcheck:
+      test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 10s
+    # deploy:
+      # resources:
+        # reservations:
+          # devices:
+          #   - driver: nvidia
+          #     count: all
+          #     capabilities: [gpu]
