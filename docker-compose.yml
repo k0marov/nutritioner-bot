@@ -3,6 +3,9 @@ services:
   backend:
     env_file:
       - backend_env 
+    environment:
+      - BASE_OLLAMA_URL=http://ollama_service:11434
+      - OLLAMA_MODEL=llama3
     build:
       context: ./backend 
     depends_on: 
