@@ -1,6 +1,7 @@
 from lib.service.interfaces import nutrition 
 
-class NutritionProviderImpl(nutrition.NutritionProvider):
+
+class FakeNutritionProvider(nutrition.NutritionProvider):
     def __init__(self) -> None:
         pass
 
