@@ -1,13 +1,13 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
-from config import HEADER_TYPE, JSON_TYPE
+from config import HEADER_TYPE, JSON_TYPE, HEADER_LENGTH
 from lib.datasources.providers import nutrition_fake
 
 
 class NutritionerHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/api/v1/meals':
-            content_length = int(self.headers[HEADER_TYPE])
+            content_length = int(self.headers[HEADER_LENGTH])
             body = self.rfile.read(content_length)
             info = json.loads(body)
 
