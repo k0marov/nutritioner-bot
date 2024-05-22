@@ -1,6 +1,8 @@
 version: '3'
 services:
   backend:
+    ports: 
+      - 8043:8000
     environment:
       - BASE_OLLAMA_URL=http://ollama_service:11434
       - OLLAMA_MODEL=llama3
@@ -14,6 +16,7 @@ services:
   bot: 
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
+      - BACKEND_BASE_URL=http://backend:8000
     build:
       context: ./bot 
     depends_on: 

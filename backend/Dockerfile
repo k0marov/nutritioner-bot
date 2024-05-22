@@ -12,6 +12,8 @@ RUN pip install --no-cache-dir -r ./requirements.txt
 
 COPY ./lib ./lib
 COPY ./main.py ./
+COPY ./server.py ./
+COPY ./config.py ./
 
 RUN chmod -R 777 ./
 
