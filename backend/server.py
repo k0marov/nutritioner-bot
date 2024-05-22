@@ -21,12 +21,15 @@ class NutritionerHandler(SimpleHTTPRequestHandler):
                 
             user_id = info['user_id']
             description = info['description']
+
+            nutrition_provider = nutrition_fake.NutritionProviderImpl()
                         
             self.send_response(200)
             self.send_header(HEADER_TYPE, JSON_TYPE)
             self.end_headers()
-            response = nutrition_fake.get_nutrition(description)
-            self.wfile.write(json.dumps(response).encode('utf-8'))
+            response = nutrition_provider.get_nutrition(meal_description=description)
+            print(response)
+            self.wfile.write(json.dumps(response.__dict__).encode('utf-8'))
         else:
             self.send_response(404)
             self.end_headers()
