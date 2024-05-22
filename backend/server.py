@@ -33,7 +33,7 @@ class NutritionerHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         response = self.nutrition_provider.get_nutrition(
             meal_description=description)
-        self.wfile.write(json.dumps(response.__dict__).encode('utf-8'))
+        self.wfile.write(json.dumps({"calories": response.calories}).encode('utf-8'))
         
 
 def run(nutrition_provider, server_class=HTTPServer, handler_class=NutritionerHandler, port=8000):
