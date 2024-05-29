@@ -20,10 +20,8 @@ def get_db_url() -> str:
     return 'postgresql+psycopg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DBNAME}'.format(**credentials)
 
 
-engine = create_engine(get_db_url())
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
 def init_db():
+    engine = create_engine(get_db_url())
     """Create tables in database."""
     Base.metadata.create_all(bind=engine)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
