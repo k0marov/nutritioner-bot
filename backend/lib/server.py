@@ -2,16 +2,15 @@
 import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-from lib.database.session import NutritionRepository
+from lib.database.session import BaseNutritionRepository
 from lib.config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
                     INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
-from lib.datasources.providers import nutrition_fake
+# from lib.datasources.providers import nutrition_fake
 from lib.service.interfaces.nutrition import NutritionProvider
 from lib.database.models import Meal
-from lib.database.session import NutritionRepository
 
 
-def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_repository: NutritionRepository):
+def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_repository: BaseNutritionRepository):
     """Create class NutritionerHandler.
 
     Args:
@@ -75,7 +74,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
 
 
 def run(
-    nutrition_repository: NutritionRepository,
+    nutrition_repository: BaseNutritionRepository,
     nutrition_provider: NutritionProvider,
     server_class=HTTPServer, port=8000,
 ):
