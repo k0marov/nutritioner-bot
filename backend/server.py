@@ -1,15 +1,18 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
-from config import HEADER_TYPE, JSON_TYPE, HEADER_LENGTH
+from config import BAD_REQUEST, HEADER_TYPE, JSON_TYPE, HEADER_LENGTH, NOT_FOUND, OK
 from lib.datasources.providers import nutrition_fake
 from lib.service.interfaces.nutrition import NutritionProvider
+from models import Meal
+from main_db import SessionLocal, init_db
 
+init_db()
 
 def nutrition_handler_factory(nutrition_provider: NutritionProvider):
     class NutritionerHandler(SimpleHTTPRequestHandler):
         def do_POST(self):
             if self.path != '/api/v1/meals':
-                self.send_response(404)
+                self.send_response(NOT_FOUND)
                 self.end_headers()
                 return
 
@@ -18,7 +21,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider):
             info = json.loads(body)
 
             if 'user_id' not in info or 'description' not in info:
-                self.send_response(400)
+                self.send_response(BAD_REQUEST)
                 self.send_header(HEADER_TYPE, JSON_TYPE)
                 self.end_headers()
                 response = {
@@ -29,7 +32,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider):
             user_id = info['user_id']
             description = info['description']
 
-            self.send_response(200)
+            self.send_response(OK)
             self.send_header(HEADER_TYPE, JSON_TYPE)
             self.end_headers()
             response = nutrition_provider.get_nutrition(
