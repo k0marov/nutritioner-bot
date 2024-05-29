@@ -1,14 +1,26 @@
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+"""HTTP nutrition server."""
 import json
-from config import BAD_REQUEST, HEADER_TYPE, INTERNAL_SERVER_ERROR, JSON_TYPE, HEADER_LENGTH, NOT_FOUND, OK
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+from config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
+                    INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
 from lib.datasources.providers import nutrition_fake
 from lib.service.interfaces.nutrition import NutritionProvider
-from models import Meal
 from main_db import SessionLocal, init_db
+from models import Meal
 
 init_db()
 
+
 def nutrition_handler_factory(nutrition_provider: NutritionProvider):
+    """Create class NutritionerHandler.
+
+    Args:
+        nutrition_provider (NutritionProvider): class that provides interface.
+
+    Returns:
+        NutritionerHandler: class for HTTP server.
+    """
     class NutritionerHandler(SimpleHTTPRequestHandler):
         def do_POST(self):
             if self.path != '/api/v1/meals':
@@ -25,7 +37,8 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider):
                 self.send_header(HEADER_TYPE, JSON_TYPE)
                 self.end_headers()
                 response = {
-                    'error': 'Invalid request, missing user_id or description'}
+                    'error': 'Invalid request, missing user_id or description',
+                }
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
 
@@ -36,15 +49,19 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider):
 
             session = SessionLocal()
             try:
-                meal = Meal(user_id=user_id, description=description, calories=nutrition_info.calories)
+                meal = Meal(
+                    user_id=user_id,
+                    description=description,
+                    calories=nutrition_info.calories,
+                )
                 session.add(meal)
                 session.commit()
-            except Exception as e:
+            except Exception as err:
                 session.rollback()
                 self.send_response(INTERNAL_SERVER_ERROR)
                 self.send_header(HEADER_TYPE, JSON_TYPE)
                 self.end_headers()
-                response = {'error': 'Database error', 'details': str(e)}
+                response = {'error': 'Database error', 'details': str(err)}
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
             finally:
@@ -59,7 +76,16 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider):
     return NutritionerHandler
 
 
-def run(nutrition_provider: NutritionProvider, server_class=HTTPServer, port=8000):
+def run(
+    nutrition_provider: NutritionProvider, server_class=HTTPServer, port=8000,
+):
+    """Start the server.
+
+    Args:
+        nutrition_provider (NutritionProvider): class that provides interface.
+        server_class (_type_, optional): defaults to HTTPServer.
+        port (int, optional): port for server. Defaults to 8000.
+    """
     handler_class = nutrition_handler_factory(nutrition_provider)
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
@@ -67,5 +93,5 @@ def run(nutrition_provider: NutritionProvider, server_class=HTTPServer, port=800
     httpd.serve_forever()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     run(nutrition_fake.FakeNutritionProvider())
