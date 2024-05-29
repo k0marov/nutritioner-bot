@@ -1,6 +1,6 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
-from config import BAD_REQUEST, HEADER_TYPE, JSON_TYPE, HEADER_LENGTH, NOT_FOUND, OK
+from config import BAD_REQUEST, HEADER_TYPE, INTERNAL_SERVER_ERROR, JSON_TYPE, HEADER_LENGTH, NOT_FOUND, OK
 from lib.datasources.providers import nutrition_fake
 from lib.service.interfaces.nutrition import NutritionProvider
 from models import Meal
@@ -32,13 +32,29 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider):
             user_id = info['user_id']
             description = info['description']
 
+            nutrition_info = nutrition_provider.get_nutrition(meal_description=description)
+
+            session = SessionLocal()
+            try:
+                meal = Meal(user_id=user_id, description=description, calories=nutrition_info.calories)
+                session.add(meal)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                self.send_response(INTERNAL_SERVER_ERROR)
+                self.send_header(HEADER_TYPE, JSON_TYPE)
+                self.end_headers()
+                response = {'error': 'Database error', 'details': str(e)}
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+                return
+            finally:
+                session.close()
+
             self.send_response(OK)
             self.send_header(HEADER_TYPE, JSON_TYPE)
             self.end_headers()
-            response = nutrition_provider.get_nutrition(
-                meal_description=description)
-            self.wfile.write(json.dumps(
-                {"calories": response.calories}).encode('utf-8'))
+            response = {"calories": nutrition_info.calories}
+            self.wfile.write(json.dumps(response).encode('utf-8'))
 
     return NutritionerHandler
 

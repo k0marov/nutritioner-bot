@@ -8,7 +8,7 @@ class Base(DeclarativeBase):
 
 
 class Meal(Base):
-    __tablename__ = 'meals'
+    __tablename__ = 'meal'
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     user_id: Mapped[str] = mapped_column(String, nullable = False)
     description: Mapped[str] = mapped_column(String, nullable=False)
