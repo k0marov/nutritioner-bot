@@ -2,17 +2,16 @@
 import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
+from database.session import NutritionRepository
 from config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
                     INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
 from datasources.providers import nutrition_fake
 from service.interfaces.nutrition import NutritionProvider
-from database.main_db import SessionLocal, init_db
 from database.models import Meal
+from database.session import NutritionRepository
 
-init_db()
 
-
-def nutrition_handler_factory(nutrition_provider: NutritionProvider):
+def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_repository: NutritionRepository):
     """Create class NutritionerHandler.
 
     Args:
@@ -47,17 +46,16 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider):
 
             nutrition_info = nutrition_provider.get_nutrition(meal_description=description)
 
-            session = SessionLocal()
             try:
                 meal = Meal(
                     user_id=user_id,
                     description=description,
                     calories=nutrition_info.calories,
                 )
-                session.add(meal)
-                session.commit()
+                nutrition_repository.session.add(meal)
+                nutrition_repository.session.commit()
             except Exception as err:
-                session.rollback()
+                nutrition_repository.session.rollback()
                 self.send_response(INTERNAL_SERVER_ERROR)
                 self.send_header(HEADER_TYPE, JSON_TYPE)
                 self.end_headers()
@@ -65,7 +63,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider):
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
             finally:
-                session.close()
+                nutrition_repository.session.close()
 
             self.send_response(OK)
             self.send_header(HEADER_TYPE, JSON_TYPE)
@@ -94,4 +92,5 @@ def run(
 
 
 if __name__ == '__main__':
-    run(nutrition_fake.FakeNutritionProvider())
+    run()
+    # run(NutritionRepository(), nutrition_fake.FakeNutritionProvider())
