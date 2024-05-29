@@ -1,4 +1,5 @@
 import os
+from lib.datasources.providers.nutrition_fake import FakeNutritionProvider
 from lib.datasources.providers import nutrition
 from lib import server
 from lib.database.session import NutritionRepository

@@ -25,4 +25,4 @@ def init_db():
     """Create tables in database."""
     Base.metadata.create_all(bind=engine)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    return SessionLocal
+    return SessionLocal()

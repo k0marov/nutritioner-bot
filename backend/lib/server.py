@@ -2,13 +2,13 @@
 import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-from database.session import NutritionRepository
-from config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
+from lib.database.session import NutritionRepository
+from lib.config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
                     INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
-from datasources.providers import nutrition_fake
-from service.interfaces.nutrition import NutritionProvider
-from database.models import Meal
-from database.session import NutritionRepository
+from lib.datasources.providers import nutrition_fake
+from lib.service.interfaces.nutrition import NutritionProvider
+from lib.database.models import Meal
+from lib.database.session import NutritionRepository
 
 
 def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_repository: NutritionRepository):
@@ -75,7 +75,9 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
 
 
 def run(
-    nutrition_provider: NutritionProvider, server_class=HTTPServer, port=8000,
+    nutrition_repository: NutritionRepository,
+    nutrition_provider: NutritionProvider,
+    server_class=HTTPServer, port=8000,
 ):
     """Start the server.
 
@@ -84,7 +86,7 @@ def run(
         server_class (_type_, optional): defaults to HTTPServer.
         port (int, optional): port for server. Defaults to 8000.
     """
-    handler_class = nutrition_handler_factory(nutrition_provider)
+    handler_class = nutrition_handler_factory(nutrition_provider, nutrition_repository)
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     print(f'Starting http server on port {port}...')
