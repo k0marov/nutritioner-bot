@@ -3,7 +3,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.models import Base
+from models import Base
 
 def get_db_url() -> str:
     dotenv.load_dotenv()
