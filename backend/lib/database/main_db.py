@@ -5,7 +5,7 @@ import dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from models import Base
+from .models import Base
 
 
 def get_db_url() -> str:

@@ -4,10 +4,10 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 from config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
                     INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
-from lib.datasources.providers import nutrition_fake
-from lib.service.interfaces.nutrition import NutritionProvider
-from main_db import SessionLocal, init_db
-from models import Meal
+from datasources.providers import nutrition_fake
+from service.interfaces.nutrition import NutritionProvider
+from database.main_db import SessionLocal, init_db
+from database.models import Meal
 
 init_db()
 

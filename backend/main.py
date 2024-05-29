@@ -1,6 +1,6 @@
 import os
 from lib.datasources.providers import nutrition
-import server
+from lib import server
 
 ollama_url = os.getenv('BASE_OLLAMA_URL')
 ollama_model = os.getenv('OLLAMA_MODEL')
