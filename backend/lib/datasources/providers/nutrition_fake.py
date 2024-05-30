@@ -1,4 +1,4 @@
-from lib.service.interfaces import nutrition 
+from lib.service.interfaces import nutrition
 
 
 class FakeNutritionProvider(nutrition.NutritionProvider):
