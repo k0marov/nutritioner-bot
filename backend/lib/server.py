@@ -75,6 +75,12 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
             self.end_headers()
             response = {"calories": nutrition_info.calories}
             self.wfile.write(json.dumps(response).encode('utf-8'))
+        
+        def do_POST(self):
+            if self.path != '/api/v1/meals':
+                self.send_response(NOT_FOUND)
+                self.end_headers()
+                return
 
     return NutritionerHandler
 
