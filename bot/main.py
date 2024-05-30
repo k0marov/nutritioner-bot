@@ -1,6 +1,55 @@
-from lib import bot, backend 
-import os 
+"""Module which runs the Nutritioner Telegram Bot."""
+import asyncio
+import json
+import logging
+import sys
+from os import getenv
 
-backend_base_url = os.getenv('BACKEND_BASE_URL')
-backend_service = backend.Backend(base_url=backend_base_url)
-bot.start_bot(backend_service)
+import requests
+from aiogram import Bot, Dispatcher
+from aiogram.filters import Command, CommandStart
+from aiogram.types import Message
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+STATUS_OK = 200
+STATUS_BAD_REQUEST = 400
+
+BOT_TOKEN = getenv('BOT_TOKEN')
+BASE_URL = getenv('BACKEND_BASE_URL')
+
+dp = Dispatcher()
+
+
+@dp.message(CommandStart())
+async def _command_start_handler(message: Message) -> None:
+    full_name = message.from_user.full_name
+    await message.answer(f'Hello, {full_name}!')
+
+
+@dp.message()
+async def _meal_handler(message: Message) -> None:
+    user_id = message.from_user.id
+    description = message.text
+    if not description:
+        return await message.answer('Пожалуйста, введите текстовое описание')
+    body = json.dumps({'description': description, 'user_id': user_id})
+    resp = requests.post(f'{BASE_URL}/api/v1/meals', data=body)
+    if resp.status_code != STATUS_OK:
+        if resp.status_code == STATUS_BAD_REQUEST:
+            return await message.answer('Неверный запрос')
+        return await message.answer('Произошла ошибка, попробуйте позже')
+    resp = resp.json()
+    calories = float(resp['calories'])
+    await message.answer(f'{calories} калорий.')
+
+
+@dp.message(Command('recommendations'))
+async def _recommendations_handler(message: Message) -> None:
+    user_id = message.from_user.id
+    resp = requests.get(f'{BASE_URL}/api/v1/stats', params={'user_id': user_id})
+    if resp.status_code != STATUS_OK:
+        return await message.answer('Произошла ошибка')
+    return await message.answer(resp.json()['recommendations'])
+
+asyncio.run(lambda: dp.start_polling(Bot(token=BOT_TOKEN)))
