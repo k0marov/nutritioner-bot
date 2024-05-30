@@ -3,7 +3,7 @@ import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
-from lib.database.session import BaseNutritionRepository, NutritionRepository, SessionLocal
+from lib.database.session import BaseNutritionRepository
 from lib.config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
                         INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
 from lib.service.interfaces.nutrition import NutritionProvider
@@ -44,6 +44,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
 
             user_id = info['user_id']
             description = info['description']
+            created_date = info['created_date']
 
             try:
                 nutrition_info = nutrition_provider.get_nutrition(
@@ -63,6 +64,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                 user_id=user_id,
                 description=description,
                 calories=nutrition_info.calories,
+                created_date=created_date,
             )
 
             if response['status'] == 'error':

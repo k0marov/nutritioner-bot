@@ -2,7 +2,7 @@
 
 
 import abc
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from lib.database.models import Meal
 
@@ -57,32 +57,35 @@ class NutritionRepository(BaseNutritionRepository):
         """
         self.session = session
 
-    def insert_meal(self, user_id: str, description: str, calories: float):
-        session = self.session()
+    def insert_meal(self, user_id: str, description: str, calories: float, created_date: date):
+        self.new_session = self.session()
         try:
             meal = Meal(
                 user_id=user_id,
                 description=description,
                 calories=calories,
+                created_date=created_date,
             )
-            session.add(meal)
-            session.commit()
+            self.new_session.add(meal)
+            self.new_session.commit()
+            return {'status': 'success'}
         except Exception as err:
-            session.rollback()
+            self.new_session.rollback()
             return {
                 'status': 'error',
                 'error': 'Database error',
                 'details': str(err)
             }
         finally:
-            session.close()
+            self.new_session.close()
 
     def get_meals_for_last_week(self, user_id: str):
-        session = self.session()
+        self.new_session = self.session()
         try:
             one_week_ago = datetime.now() - timedelta(days=7)
-            meals = session.query(Meal).filter(
-                Meal.user_id == user_id, Meal.created_date == one_week_ago.date()).all()
+            print(one_week_ago)
+            meals = self.new_session.query(Meal).filter(
+                Meal.user_id == user_id, Meal.created_date >= one_week_ago.date()).all()
             return meals
         except Exception as err:
             return {
@@ -91,4 +94,4 @@ class NutritionRepository(BaseNutritionRepository):
                 'details': str(err)
             }
         finally:
-            session.close()
+            self.new_session.close()

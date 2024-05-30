@@ -7,3 +7,6 @@ class FakeNutritionProvider(nutrition.NutritionProvider):
 
     def get_nutrition(self, meal_description: str) -> nutrition.NutritionInfo:
         return nutrition.NutritionInfo(calories=500.0)
+
+    def get_recommendations(self, past_data: list[nutrition.NutritionInfo]) -> str:
+        return f'надо меньше есть'
