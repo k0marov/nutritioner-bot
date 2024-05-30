@@ -5,7 +5,7 @@ services:
       - 8043:8000
     environment:
       - BASE_OLLAMA_URL=http://ollama_service:11434
-      - OLLAMA_MODEL=llama3
+      - OLLAMA_MODEL=${LLM}
     build:
       context: ./backend 
     depends_on: 
@@ -38,7 +38,7 @@ services:
       - ./db_data:/var/lib/postgresql/data
   ollama_pull: 
     image: curlimages/curl:latest 
-    command: [ "curl", "--fail", "-d", '{"name": "llama3:8b"}', "ollama_service:11434/api/pull" ]
+    command: [ "curl", "--fail", "-d", '{"name": "${LLM}"}', "ollama_service:11434/api/pull" ]
     depends_on:
       ollama_service: 
         condition: service_healthy
