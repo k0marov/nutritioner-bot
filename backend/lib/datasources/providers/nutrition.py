@@ -40,7 +40,7 @@ class NutritionProviderImpl(nutrition.NutritionProvider):
         return nutrition.NutritionInfo(calories=float(calories))
 
     def get_recommendations(self, past_data: list[nutrition.NutritionInfo]) -> str: 
-        prompt = GET_RECOMMENDATIONS_PROMPT.replace('[[INPUT]]', str(past_data))
+        prompt = GET_RECOMMENDATIONS_PROMPT.replace('[[INPUT]]', str([d.__dict__ for d in past_data]))
         body = json.dumps({"model": self.ollama_model, "prompt": prompt, "stream": False})
         r = requests.post(f'{self.ollama_url}/api/generate', data=body)
         resp = r.json()["response"]

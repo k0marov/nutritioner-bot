@@ -13,3 +13,9 @@ class Backend:
             raise Exception(f'got non-200 status code from backend: {r.status_code}')
         resp = r.json() 
         return NutritionInfo(calories=resp["calories"]) 
+    def get_recommendations(self, user_id: str) -> str: 
+        r = requests.get(f'{self._base_url}/api/v1/stats', params={'user_id': user_id})
+        if r.status_code != 200: 
+            raise Exception(f'got non-200 status code from backend: {r.status_code}')
+        resp = r.json() 
+        return resp['recommendations']
