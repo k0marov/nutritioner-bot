@@ -43,26 +43,36 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
             user_id = info['user_id']
             description = info['description']
 
-            nutrition_info = nutrition_provider.get_nutrition(meal_description=description)
-
             try:
-                meal = Meal(
-                    user_id=user_id,
-                    description=description,
-                    calories=nutrition_info.calories,
-                )
-                nutrition_repository.session.add(meal)
-                nutrition_repository.session.commit()
+                nutrition_info = nutrition_provider.get_nutrition(meal_description=description)
             except Exception as err:
-                nutrition_repository.session.rollback()
-                self.send_response(INTERNAL_SERVER_ERROR)
+                self.send_response(BAD_REQUEST)
                 self.send_header(HEADER_TYPE, JSON_TYPE)
                 self.end_headers()
-                response = {'error': 'Database error', 'details': str(err)}
+                response = {
+                    'error': 'Server did not recognize the request.',
+                }
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
-            finally:
-                nutrition_repository.session.close()
+
+            # try:
+            #     meal = Meal(
+            #         user_id=user_id,
+            #         description=description,
+            #         calories=nutrition_info.calories,
+            #     )
+            #     nutrition_repository.session.add(meal)
+            #     nutrition_repository.session.commit()
+            # except Exception as err:
+            #     nutrition_repository.session.rollback()
+            #     self.send_response(INTERNAL_SERVER_ERROR)
+            #     self.send_header(HEADER_TYPE, JSON_TYPE)
+            #     self.end_headers()
+            #     response = {'error': 'Database error', 'details': str(err)}
+            #     self.wfile.write(json.dumps(response).encode('utf-8'))
+            #     return
+            # finally:
+            #     nutrition_repository.session.close()
 
             self.send_response(OK)
             self.send_header(HEADER_TYPE, JSON_TYPE)

@@ -27,3 +27,6 @@ class NutritionRepository(BaseNutritionRepository):
             session (_type_): SessionLocal.
         """
         self.session = session
+
+    def insert_meal(self, meal):
+        pass
