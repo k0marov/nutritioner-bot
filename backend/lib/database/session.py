@@ -58,7 +58,7 @@ class NutritionRepository(BaseNutritionRepository):
         self.session = session
 
     def insert_meal(self, user_id: str, description: str, calories: float, created_date: date):
-        self.new_session = self.session()
+        session = self.session()
         try:
             meal = Meal(
                 user_id=user_id,
@@ -66,25 +66,24 @@ class NutritionRepository(BaseNutritionRepository):
                 calories=calories,
                 created_date=created_date,
             )
-            self.new_session.add(meal)
-            self.new_session.commit()
+            session.add(meal)
+            session.commit()
             return {'status': 'success'}
         except Exception as err:
-            self.new_session.rollback()
+            session.rollback()
             return {
                 'status': 'error',
                 'error': 'Database error',
                 'details': str(err)
             }
         finally:
-            self.new_session.close()
+            session.close()
 
     def get_meals_for_last_week(self, user_id: str):
-        self.new_session = self.session()
+        session = self.session()
         try:
             one_week_ago = datetime.now() - timedelta(days=7)
-            print(one_week_ago)
-            meals = self.new_session.query(Meal).filter(
+            meals = session.query(Meal).filter(
                 Meal.user_id == user_id, Meal.created_date >= one_week_ago.date()).all()
             return meals
         except Exception as err:
@@ -94,4 +93,4 @@ class NutritionRepository(BaseNutritionRepository):
                 'details': str(err)
             }
         finally:
-            self.new_session.close()
+            session.close()
