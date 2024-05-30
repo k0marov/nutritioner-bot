@@ -1,4 +1,5 @@
 """HTTP nutrition server."""
+from datetime import datetime
 import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -44,7 +45,10 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
 
             user_id = info['user_id']
             description = info['description']
-            created_date = info['created_date']
+            if 'created_date' in info:
+                created_date = info['created_date']
+            else:
+                created_date = datetime.now()
 
             try:
                 nutrition_info = nutrition_provider.get_nutrition(
