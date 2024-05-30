@@ -15,6 +15,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
 
     Args:
         nutrition_provider (NutritionProvider): class that provides interface.
+        nutrition_repository (BaseNutritionRepository): class that provides interface.
 
     Returns:
         NutritionerHandler: class for HTTP server.
@@ -51,28 +52,23 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                 self.end_headers()
                 response = {
                     'error': 'Server did not recognize the request.',
+                    'details': str(err),
                 }
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
 
-            # try:
-            #     meal = Meal(
-            #         user_id=user_id,
-            #         description=description,
-            #         calories=nutrition_info.calories,
-            #     )
-            #     nutrition_repository.session.add(meal)
-            #     nutrition_repository.session.commit()
-            # except Exception as err:
-            #     nutrition_repository.session.rollback()
-            #     self.send_response(INTERNAL_SERVER_ERROR)
-            #     self.send_header(HEADER_TYPE, JSON_TYPE)
-            #     self.end_headers()
-            #     response = {'error': 'Database error', 'details': str(err)}
-            #     self.wfile.write(json.dumps(response).encode('utf-8'))
-            #     return
-            # finally:
-            #     nutrition_repository.session.close()
+            response = nutrition_repository.insert_meal(
+                user_id=user_id,
+                description=description,
+                calories=nutrition_info.calories,
+            )
+
+            if response['status'] == 'error':
+                self.send_response(INTERNAL_SERVER_ERROR)
+                self.send_header(HEADER_TYPE, JSON_TYPE)
+                self.end_headers()
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+                return
 
             self.send_response(OK)
             self.send_header(HEADER_TYPE, JSON_TYPE)

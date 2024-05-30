@@ -3,6 +3,8 @@
 
 import abc
 
+from lib.database.models import Meal
+
 
 class BaseNutritionRepository(abc.ABC):
     """Class with interface for NutritionRepository."""
@@ -13,6 +15,20 @@ class BaseNutritionRepository(abc.ABC):
 
         Args:
             session (_type_): SessionLocal.
+        """
+        pass
+
+    @abc.abstractmethod
+    def insert_meal(self, user_id: str, description: str, calories: float) -> dict:
+        """Insert a meal into the database.
+
+        Args:
+            user_id (str): ID of the user.
+            description (str): description of the meal.
+            calories (float): number of calories in the meal.
+
+        Returns:
+            dict: response indicating failure.
         """
         pass
 
@@ -28,5 +44,22 @@ class NutritionRepository(BaseNutritionRepository):
         """
         self.session = session
 
-    def insert_meal(self, meal):
-        self.session = self.session()
+    def insert_meal(self, user_id: str, description: str, calories: float):
+        session = self.session()
+        try:
+            meal = Meal(
+                user_id=user_id,
+                description=description,
+                calories=calories,
+            )
+            session.add(meal)
+            session.commit()
+        except Exception as err:
+            session.rollback()
+            return {
+                'status': 'error',
+                'error': 'Database error',
+                'details': str(err)
+            }
+        finally:
+            session.close()
