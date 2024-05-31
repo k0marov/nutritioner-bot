@@ -7,3 +7,4 @@ bot_env
 .env
 ollama_data
 db_data
+.DS_STORE

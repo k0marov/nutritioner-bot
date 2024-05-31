@@ -39,8 +39,7 @@ async def _meal_handler(message: Message) -> None:
         if resp.status_code == STATUS_BAD_REQUEST:
             return await message.answer('Неверный запрос')
         return await message.answer('Произошла ошибка, попробуйте позже')
-    resp = resp.json()
-    calories = float(resp['calories'])
+    calories = float(resp.json()['calories'])
     await message.answer(f'{calories} калорий.')
 
 
@@ -52,4 +51,4 @@ async def _recommendations_handler(message: Message) -> None:
         return await message.answer('Произошла ошибка')
     return await message.answer(resp.json()['recommendations'])
 
-asyncio.run(lambda: dp.start_polling(Bot(token=BOT_TOKEN)))
+asyncio.run(dp.start_polling(Bot(token=BOT_TOKEN)))

@@ -4,13 +4,18 @@ services:
     ports: 
       - 8043:8000
     environment:
-      - BASE_OLLAMA_URL=http://ollama_service:11434
+      - BASE_OLLAMA_URL=http://host.docker.internal:11434
       - OLLAMA_MODEL=${LLM}
+      - PG_HOST=backend_db 
+      - PG_PORT=5432 
+      - PG_USER=${DB_USER}
+      - PG_PASSWORD=${DB_PASS}
+      - PG_DBNAME=${DB_NAME}
     build:
       context: ./backend 
     depends_on: 
-      ollama_pull:
-        condition: service_completed_successfully
+      # ollama_pull:
+      #   condition: service_completed_successfully
       backend_db: 
         condition: service_healthy
   bot: 
@@ -28,7 +33,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS} 
       - POSTGRES_DB=${DB_NAME}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,24 +41,24 @@ services:
       - 5454:5432 
     volumes: 
       - ./db_data:/var/lib/postgresql/data
-  ollama_pull: 
-    image: curlimages/curl:latest 
-    command: [ "curl", "--fail", "-d", '{"name": "${LLM}"}', "ollama_service:11434/api/pull" ]
-    depends_on:
-      ollama_service: 
-        condition: service_healthy
-  ollama_service:
-    image: ollama/ollama:latest
-    ports:
-      - "11435:11434"
-    volumes:
-      - ./ollama_data:/root/.ollama
-    healthcheck:
-      test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
-      interval: 10s
-      timeout: 30s
-      retries: 5
-      start_period: 10s
+  # ollama_pull: 
+  #   image: curlimages/curl:latest 
+  #   command: [ "curl", "--fail", "-d", '{"name": "${LLM}"}', "ollama_service:11434/api/pull" ]
+  #   depends_on:
+  #     ollama_service: 
+  #       condition: service_healthy
+  # ollama_service:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11435:11434"
+  #   volumes:
+  #     - ./ollama_data:/root/.ollama
+  #   healthcheck:
+  #     test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
+  #     interval: 10s
+  #     timeout: 30s
+  #     retries: 5
+  #     start_period: 10s
     # deploy:
       # resources:
         # reservations:

@@ -15,7 +15,8 @@ Provide recommendations for a client who entered some data into a nutrition app.
 This client is an adult who has normal weight. He does not have a goal of losing weight, he just wants to maintain it. If he consumes less calories than needed for normal life, tell him about it. If he consumes more, also tell him. Give not only general advice, but also advice for specific days, if they differ from others very much.
 Answer no more than 150 words, no preface, no general words, more specific recommendations.
 
-Here is a list of PAST kilocalorie intake for days from today to N days ago. Give general analytics on these past days, and some recommendations for the future. Answer only in Russian.
+Here is a list of PAST kilocalorie intake for days from today to N days ago. None signifies that there was no data for that day, you should ignore it. 
+Give general analytics on these past days, and some recommendations for the future. Answer only in Russian.
 Input: [[INPUT]]
 """
 
@@ -40,7 +41,8 @@ class NutritionProviderImpl(nutrition.NutritionProvider):
         return nutrition.NutritionInfo(calories=float(calories))
 
     def get_recommendations(self, past_data: list[nutrition.NutritionInfo]) -> str: 
-        prompt = GET_RECOMMENDATIONS_PROMPT.replace('[[INPUT]]', str([d.__dict__ for d in past_data]))
+        prompt = GET_RECOMMENDATIONS_PROMPT.replace('[[INPUT]]', str([d.__dict__ if d is not None else None for d in past_data]))
+        print(prompt)
         body = json.dumps({"model": self.ollama_model, "prompt": prompt, "stream": False})
         r = requests.post(f'{self.ollama_url}/api/generate', data=body)
         resp = r.json()["response"]

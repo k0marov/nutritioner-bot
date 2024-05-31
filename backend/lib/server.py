@@ -1,5 +1,5 @@
 """HTTP nutrition server."""
-from datetime import datetime
+import datetime 
 import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -48,7 +48,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
             if 'created_date' in info:
                 created_date = info['created_date']
             else:
-                created_date = datetime.now()
+                created_date = datetime.datetime.now()
 
             try:
                 nutrition_info = nutrition_provider.get_nutrition(
@@ -106,7 +106,12 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                     self.wfile.write(json.dumps(meals).encode('utf-8'))
                     return
 
-                past_data = [nutrition.NutritionInfo(calories=meal.calories) for meal in meals]
+                past_data = [
+                    nutrition.NutritionInfo(
+                        calories=sum([meal.calories for meal in meals if meal.created_date.date() == datetime.datetime.now().date()-datetime.timedelta(days=day)])
+                    ) for day in range(7)
+                ]
+                past_data = [n if n.calories else None for n in past_data]
 
                 try:
                     recommendations = nutrition_provider.get_recommendations(past_data)
@@ -122,7 +127,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                 self.send_header(HEADER_TYPE, JSON_TYPE)
                 self.end_headers()
                 response = {"recommendations": recommendations}
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
                 return
 
             self.send_response(NOT_FOUND)
