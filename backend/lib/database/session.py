@@ -2,6 +2,7 @@
 
 
 import abc
+from datetime import date, datetime, timedelta
 
 from lib.database.models import Meal
 
@@ -32,6 +33,18 @@ class BaseNutritionRepository(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
+    def get_meals_for_last_week(self, user_id: str):
+        """Get meals for the last week for a given user.
+
+        Args:
+            user_id (str): ID of the user.
+
+        Returns:
+            list: list of meals.
+        """
+        pass
+
 
 class NutritionRepository(BaseNutritionRepository):
     """Class with session."""
@@ -44,18 +57,36 @@ class NutritionRepository(BaseNutritionRepository):
         """
         self.session = session
 
-    def insert_meal(self, user_id: str, description: str, calories: float):
+    def insert_meal(self, user_id: str, description: str, calories: float, created_date: date):
         session = self.session()
         try:
             meal = Meal(
                 user_id=user_id,
                 description=description,
                 calories=calories,
+                created_date=created_date,
             )
             session.add(meal)
             session.commit()
+            return {'status': 'success'}
         except Exception as err:
             session.rollback()
+            return {
+                'status': 'error',
+                'error': 'Database error',
+                'details': str(err)
+            }
+        finally:
+            session.close()
+
+    def get_meals_for_last_week(self, user_id: str):
+        session = self.session()
+        try:
+            one_week_ago = datetime.now() - timedelta(days=7)
+            meals = session.query(Meal).filter(
+                Meal.user_id == user_id, Meal.created_date >= one_week_ago.date()).all()
+            return meals
+        except Exception as err:
             return {
                 'status': 'error',
                 'error': 'Database error',

@@ -1,7 +1,8 @@
 """File with model for database."""
+from datetime import datetime
 import uuid
 
-from sqlalchemy import String
+from sqlalchemy import DateTime, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -19,3 +20,5 @@ class Meal(Base):
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
     calories: Mapped[float]
+    created_date: Mapped[datetime]
+    # created_date: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=True)

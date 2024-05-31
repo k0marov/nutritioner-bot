@@ -1,13 +1,15 @@
 """HTTP nutrition server."""
+from datetime import datetime
 import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 
 from lib.database.session import BaseNutritionRepository
 from lib.config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
-                    INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
-# from lib.datasources.providers import nutrition_fake
+                        INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
 from lib.service.interfaces.nutrition import NutritionProvider
 from lib.database.models import Meal
+from lib.service.interfaces import nutrition
 
 
 def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_repository: BaseNutritionRepository):
@@ -43,9 +45,14 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
 
             user_id = info['user_id']
             description = info['description']
+            if 'created_date' in info:
+                created_date = info['created_date']
+            else:
+                created_date = datetime.now()
 
             try:
-                nutrition_info = nutrition_provider.get_nutrition(meal_description=description)
+                nutrition_info = nutrition_provider.get_nutrition(
+                    meal_description=description)
             except Exception as err:
                 self.send_response(BAD_REQUEST)
                 self.send_header(HEADER_TYPE, JSON_TYPE)
@@ -61,6 +68,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                 user_id=user_id,
                 description=description,
                 calories=nutrition_info.calories,
+                created_date=created_date,
             )
 
             if response['status'] == 'error':
@@ -75,6 +83,51 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
             self.end_headers()
             response = {"calories": nutrition_info.calories}
             self.wfile.write(json.dumps(response).encode('utf-8'))
+
+        def do_GET(self):
+            if self.path.startswith('/api/v1/stats'):
+                query_components = parse_qs(urlparse(self.path).query)
+                user_id = query_components.get('user_id', [None])[0]
+
+                if not user_id:
+                    self.send_response(BAD_REQUEST)
+                    self.send_header(HEADER_TYPE, JSON_TYPE)
+                    self.end_headers()
+                    response = {'error': 'Missing user_id parameter'}
+                    self.wfile.write(json.dumps(response).encode('utf-8'))
+                    return
+
+                meals = nutrition_repository.get_meals_for_last_week(user_id)
+
+                if isinstance(meals, dict) and meals.get('status') == 'error':
+                    self.send_response(INTERNAL_SERVER_ERROR)
+                    self.send_header(HEADER_TYPE, JSON_TYPE)
+                    self.end_headers()
+                    self.wfile.write(json.dumps(meals).encode('utf-8'))
+                    return
+
+                past_data = [nutrition.NutritionInfo(calories=meal.calories) for meal in meals]
+
+                try:
+                    recommendations = nutrition_provider.get_recommendations(past_data)
+                except Exception as err:
+                    self.send_response(INTERNAL_SERVER_ERROR)
+                    self.send_header(HEADER_TYPE, JSON_TYPE)
+                    self.end_headers()
+                    response = {'error': 'Error fetching recommendations', 'details': str(err)}
+                    self.wfile.write(json.dumps(response).encode('utf-8'))
+                    return
+
+                self.send_response(OK)
+                self.send_header(HEADER_TYPE, JSON_TYPE)
+                self.end_headers()
+                response = {"recommendations": recommendations}
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+                return
+
+            self.send_response(NOT_FOUND)
+            self.end_headers()
+            return
 
     return NutritionerHandler
 
@@ -100,4 +153,3 @@ def run(
 
 if __name__ == '__main__':
     run()
-    # run(NutritionRepository(), nutrition_fake.FakeNutritionProvider())
