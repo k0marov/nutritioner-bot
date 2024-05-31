@@ -29,6 +29,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pytest unittest2
-        pip instal -r backend/requirements.txt
+        pip install -r backend/requirements.txt
     - name: pytest
       run: cd backend && python -m pytest test
