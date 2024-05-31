@@ -4,7 +4,7 @@ services:
     ports: 
       - 8043:8000
     environment:
-      - BASE_OLLAMA_URL=http://host.docker.internal:11434
+      - BASE_OLLAMA_URL=${OVERRIDE_OLLAMA_URL-http://ollama_service:11434}
       - OLLAMA_MODEL=${LLM}
       - PG_HOST=backend_db 
       - PG_PORT=5432 
@@ -41,28 +41,30 @@ services:
       - 5454:5432 
     volumes: 
       - ./db_data:/var/lib/postgresql/data
-  # ollama_pull: 
-  #   image: curlimages/curl:latest 
-  #   command: [ "curl", "--fail", "-d", '{"name": "${LLM}"}', "ollama_service:11434/api/pull" ]
-  #   depends_on:
-  #     ollama_service: 
-  #       condition: service_healthy
-  # ollama_service:
-  #   image: ollama/ollama:latest
-  #   ports:
-  #     - "11435:11434"
-  #   volumes:
-  #     - ./ollama_data:/root/.ollama
-  #   healthcheck:
-  #     test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
-  #     interval: 10s
-  #     timeout: 30s
-  #     retries: 5
-  #     start_period: 10s
+  ollama_pull: 
+    profiles: ["ollama_in_docker"]
+    image: curlimages/curl:latest 
+    command: [ "curl", "--fail", "-d", '{"name": "${LLM}"}', "ollama_service:11434/api/pull" ]
+    depends_on:
+      ollama_service: 
+        condition: service_healthy
+  ollama_service:
+    profiles: ["ollama_in_docker"]
+    image: ollama/ollama:latest
+    ports:
+      - "11435:11434"
+    volumes:
+      - ./ollama_data:/root/.ollama
+    healthcheck:
+      test: "bash -c 'cat < /dev/null > /dev/tcp/localhost/11434'"
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 10s
     # deploy:
-      # resources:
-        # reservations:
-          # devices:
-          #   - driver: nvidia
-          #     count: all
-          #     capabilities: [gpu]
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
