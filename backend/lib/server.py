@@ -77,7 +77,6 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                 self.end_headers()
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
-
             self.send_response(OK)
             self.send_header(HEADER_TYPE, JSON_TYPE)
             self.end_headers()
@@ -104,6 +103,11 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                     self.send_header(HEADER_TYPE, JSON_TYPE)
                     self.end_headers()
                     self.wfile.write(json.dumps(meals).encode('utf-8'))
+                    return
+
+                if not meals: 
+                    self.send_response(NOT_FOUND)
+                    self.end_headers()
                     return
 
                 past_data = [
