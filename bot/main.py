@@ -26,6 +26,14 @@ async def _command_start_handler(message: Message) -> None:
     full_name = message.from_user.full_name
     await message.answer(f'Hello, {full_name}!')
 
+@dp.message(Command('recommendations'))
+async def _recommendations_handler(message: Message) -> None:
+    user_id = message.from_user.id
+    resp = requests.get(f'{BASE_URL}/api/v1/stats', params={'user_id': user_id})
+    if resp.status_code != STATUS_OK:
+        return await message.answer('Произошла ошибка')
+    return await message.answer(resp.json()['recommendations'])
+
 
 @dp.message()
 async def _meal_handler(message: Message) -> None:
@@ -42,13 +50,5 @@ async def _meal_handler(message: Message) -> None:
     calories = float(resp.json()['calories'])
     await message.answer(f'{calories} калорий.')
 
-
-@dp.message(Command('recommendations'))
-async def _recommendations_handler(message: Message) -> None:
-    user_id = message.from_user.id
-    resp = requests.get(f'{BASE_URL}/api/v1/stats', params={'user_id': user_id})
-    if resp.status_code != STATUS_OK:
-        return await message.answer('Произошла ошибка')
-    return await message.answer(resp.json()['recommendations'])
 
 asyncio.run(dp.start_polling(Bot(token=BOT_TOKEN)))
