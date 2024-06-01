@@ -26,6 +26,7 @@ async def _command_start_handler(message: Message) -> None:
     full_name = message.from_user.full_name
     await message.answer(f'Hello, {full_name}!')
 
+
 @dp.message(Command('recommendations'))
 async def _recommendations_handler(message: Message) -> None:
     user_id = message.from_user.id
