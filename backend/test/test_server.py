@@ -7,6 +7,7 @@ from unittest import TestCase, mock
 
 import requests
 from lib import config
+
 from lib.database.models import Meal
 from lib.server import nutrition_handler_factory
 from lib.service.interfaces.nutrition import NutritionInfo

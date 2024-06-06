@@ -4,6 +4,7 @@ import json
 
 import requests
 from lib import config
+
 from lib.service.interfaces import nutrition
 
 GET_CALORIES_PROMPT = r"""
