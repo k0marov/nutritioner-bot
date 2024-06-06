@@ -31,9 +31,9 @@ def nutrition_handler_factory(
 
             content_length = int(self.headers[config.HEADER_LENGTH])
             body = self.rfile.read(content_length)
-            info = json.loads(body)
+            meal_info = json.loads(body)
 
-            if 'user_id' not in info or 'description' not in info:
+            if 'user_id' not in meal_info or 'description' not in meal_info:
                 self.send_response(config.BAD_REQUEST)
                 self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
@@ -43,10 +43,10 @@ def nutrition_handler_factory(
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
 
-            user_id = info['user_id']
-            description = info['description']
-            if 'created_date' in info:
-                created_date = info['created_date']
+            user_id = meal_info['user_id']
+            description = meal_info['description']
+            if 'created_date' in meal_info:
+                created_date = meal_info['created_date']
             else:
                 created_date = datetime.datetime.now()
 
