@@ -12,6 +12,14 @@ from lib.database.models import Meal
 from lib.server import nutrition_handler_factory
 from lib.service.interfaces.nutrition import NutritionInfo
 
+CALORIES500 = 500.0
+CALORIES100 = 100
+CALORIES200 = 200
+CALORIES400 = 400
+CALORIES1000 = 1000
+CALORIES300 = 300
+CALORIES42 = 42
+
 
 class TestHTTPServer(TestCase):
     """Class with tests for the server.
@@ -38,7 +46,7 @@ class TestHTTPServer(TestCase):
 
     def test_POST(self):
         """Test the POST request for creating a meal."""
-        nutrition_info = NutritionInfo(calories=config.CAL42)
+        nutrition_info = NutritionInfo(calories=CALORIES42)
         self.provider_mock.get_nutrition = mock.MagicMock(return_value=nutrition_info)
         self.repo_mock.insert_meal = mock.MagicMock(return_value={'status': 'ok'})
         test_description = 'test meal description'
@@ -65,14 +73,14 @@ class TestHTTPServer(TestCase):
         user_id = '42'
         now = datetime.datetime.now()
         saved_meals = [
-            Meal(calories=config.CAL100, created_date=now),
-            Meal(calories=config.CAL200, created_date=now-datetime.timedelta(milliseconds=5)),
-            Meal(calories=config.CAL400, created_date=now-datetime.timedelta(days=2)),
-            Meal(calories=config.CAL1000, created_date=now-datetime.timedelta(days=4)),
+            Meal(calories=CALORIES100, created_date=now),
+            Meal(calories=CALORIES200, created_date=now-datetime.timedelta(milliseconds=5)),
+            Meal(calories=CALORIES400, created_date=now-datetime.timedelta(days=2)),
+            Meal(calories=CALORIES1000, created_date=now-datetime.timedelta(days=4)),
         ]
         expected_flattened = [
-            NutritionInfo(calories=config.CAL300), None, NutritionInfo(calories=config.CAL400),
-            None, NutritionInfo(calories=config.CAL1000), None, None,
+            NutritionInfo(calories=CALORIES300), None, NutritionInfo(calories=CALORIES400),
+            None, NutritionInfo(calories=CALORIES1000), None, None,
         ]
         self.repo_mock.get_meals_for_last_week = mock.MagicMock(return_value=saved_meals)
 
