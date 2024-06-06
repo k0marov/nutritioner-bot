@@ -38,9 +38,9 @@ def nutrition_handler_factory(
                 self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
                 response = {
-                    'error': 'Invalid request, missing user_id or description',
+                    config.ERROR: 'Invalid request, missing user_id or description',
                 }
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response).encode(config.UTF8))
                 return
 
             user_id = meal_info['user_id']
@@ -54,10 +54,10 @@ def nutrition_handler_factory(
                 self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
                 response = {
-                    'error': 'Server did not recognize the request.',
+                    config.ERROR: 'Server did not recognize the request.',
                     'details': str(err),
                 }
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response).encode(config.UTF8))
                 return
 
             response = nutrition_repository.insert_meal(
@@ -67,17 +67,17 @@ def nutrition_handler_factory(
                 created_date=created_date,
             )
 
-            if response['status'] == 'error':
+            if response['status'] == config.ERROR:
                 self.send_response(config.INTERNAL_SERVER_ERROR)
                 self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
-                self.wfile.write(json.dumps(response).encode('utf-8'))
+                self.wfile.write(json.dumps(response).encode(config.UTF8))
                 return
             self.send_response(config.OK)
             self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
             self.end_headers()
             response = {"calories": nutrition_info.calories}
-            self.wfile.write(json.dumps(response).encode('utf-8'))
+            self.wfile.write(json.dumps(response).encode(config.UTF8))
 
         def do_GET(self):
             if self.path.startswith('/api/v1/stats'):
@@ -88,17 +88,17 @@ def nutrition_handler_factory(
                     self.send_response(config.BAD_REQUEST)
                     self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                     self.end_headers()
-                    response = {'error': 'Missing user_id parameter'}
-                    self.wfile.write(json.dumps(response).encode('utf-8'))
+                    response = {config.ERROR: 'Missing user_id parameter'}
+                    self.wfile.write(json.dumps(response).encode(config.UTF8))
                     return
 
                 meals = nutrition_repository.get_meals_for_last_week(user_id)
 
-                if isinstance(meals, dict) and meals.get('status') == 'error':
+                if isinstance(meals, dict) and meals.get('status') == config.ERROR:
                     self.send_response(config.INTERNAL_SERVER_ERROR)
                     self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                     self.end_headers()
-                    self.wfile.write(json.dumps(meals).encode('utf-8'))
+                    self.wfile.write(json.dumps(meals).encode(config.UTF8))
                     return
 
                 if not meals:
@@ -124,15 +124,17 @@ def nutrition_handler_factory(
                     self.send_response(config.INTERNAL_SERVER_ERROR)
                     self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                     self.end_headers()
-                    response = {'error': 'Error fetching recommendations', 'details': str(err)}
-                    self.wfile.write(json.dumps(response).encode('utf-8'))
+                    response = {
+                        config.ERROR: 'Error fetching recommendations', 'details': str(err),
+                    }
+                    self.wfile.write(json.dumps(response).encode(config.UTF8))
                     return
 
                 self.send_response(config.OK)
                 self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
                 response = {"recommendations": recommendations}
-                self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
+                self.wfile.write(json.dumps(response, ensure_ascii=False).encode(config.UTF8))
                 return
 
             self.send_response(config.NOT_FOUND)

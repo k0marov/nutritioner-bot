@@ -4,6 +4,7 @@
 import abc
 from datetime import date, datetime, timedelta
 
+from lib import config
 from lib.database.models import Meal
 
 
@@ -74,8 +75,8 @@ class NutritionRepository(BaseNutritionRepository):
         except Exception as err:
             session.rollback()
             return {
-                'status': 'error',
-                'error': 'Database error',
+                'status': config.ERROR,
+                config.ERROR: 'Database error',
                 'details': str(err),
             }
         finally:
@@ -99,8 +100,8 @@ class NutritionRepository(BaseNutritionRepository):
             ).all()
         except Exception as err:
             return {
-                'status': 'error',
-                'error': 'Database error',
+                'status': config.ERROR,
+                config.ERROR: 'Database error',
                 'details': str(err),
             }
         finally:

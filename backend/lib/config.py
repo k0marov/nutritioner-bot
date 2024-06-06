@@ -14,3 +14,5 @@ CAL400 = 400
 CAL1000 = 1000
 CAL300 = 300
 CAL42 = 42
+ERROR = 'error'
+UTF8 = 'utf-8'
