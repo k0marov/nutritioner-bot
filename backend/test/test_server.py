@@ -25,8 +25,8 @@ class TestHTTPServer(TestCase):
         self.repo_mock = mock.Mock()
         self.provider_mock = mock.Mock()
 
-        handler = nutrition_handler_factory(self.provider_mock, self.repo_mock)
-        self.server = http.server.HTTPServer(('localhost', 0), handler)
+        server_handler = nutrition_handler_factory(self.provider_mock, self.repo_mock)
+        self.server = http.server.HTTPServer(('localhost', 0), server_handler)
         self.port = self.server.server_address[1]
         self.thread = threading.Thread(target=self.server.serve_forever)
         self.thread.start()
