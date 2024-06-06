@@ -23,7 +23,7 @@ def nutrition_handler_factory(
         NutritionerHandler: class for HTTP server.
     """
     class NutritionerHandler(SimpleHTTPRequestHandler):
-        def do_post(self):
+        def do_POST(self):
             if self.path != '/api/v1/meals':
                 self.send_response(config.NOT_FOUND)
                 self.end_headers()
@@ -82,7 +82,7 @@ def nutrition_handler_factory(
             response = {"calories": nutrition_info.calories}
             self.wfile.write(json.dumps(response).encode('utf-8'))
 
-        def do_get(self):
+        def do_GET(self):
             if self.path.startswith('/api/v1/stats'):
                 query_components = parse_qs(urlparse(self.path).query)
                 user_id = query_components.get('user_id', [None])[0]
@@ -161,7 +161,6 @@ def run(
     handler_class = nutrition_handler_factory(nutrition_provider, nutrition_repository)
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    print(f'Starting http server on port {port}...')
     httpd.serve_forever()
 
 

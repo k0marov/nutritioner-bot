@@ -90,7 +90,6 @@ class NutritionProviderImpl(nutrition.NutritionProvider):
         prompt = GET_RECOMMENDATIONS_PROMPT.replace(
             '[[INPUT]]', str([d.__dict__ if d is not None else None for d in past_data]),
         )
-        print(prompt)
         body = json.dumps({"model": self.ollama_model, "prompt": prompt, "stream": False})
         request = requests.post(
             f'{self.ollama_url}/api/generate', data=body, timeout=config.TIMEOUT,
