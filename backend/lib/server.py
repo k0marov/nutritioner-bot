@@ -23,7 +23,7 @@ def nutrition_handler_factory(
         NutritionerHandler: class for HTTP server.
     """
     class NutritionerHandler(SimpleHTTPRequestHandler):
-        def do_POST(self):
+        def do_post(self):
             if self.path != '/api/v1/meals':
                 self.send_response(config.NOT_FOUND)
                 self.end_headers()
@@ -82,7 +82,7 @@ def nutrition_handler_factory(
             response = {"calories": nutrition_info.calories}
             self.wfile.write(json.dumps(response).encode('utf-8'))
 
-        def do_GET(self):
+        def do_get(self):
             if self.path.startswith('/api/v1/stats'):
                 query_components = parse_qs(urlparse(self.path).query)
                 user_id = query_components.get('user_id', [None])[0]
