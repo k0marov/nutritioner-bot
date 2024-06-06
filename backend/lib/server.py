@@ -4,15 +4,14 @@ import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 
-from lib.config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
-                        INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
+from lib import config
 from lib.database.session import BaseNutritionRepository
 from lib.service.interfaces import nutrition
 
 
 def nutrition_handler_factory(
-        nutrition_provider: nutrition.NutritionProvider,
-        nutrition_repository: BaseNutritionRepository,
+    nutrition_provider: nutrition.NutritionProvider,
+    nutrition_repository: BaseNutritionRepository,
 ):
     """Create class NutritionerHandler.
 
@@ -26,17 +25,17 @@ def nutrition_handler_factory(
     class NutritionerHandler(SimpleHTTPRequestHandler):
         def do_POST(self):
             if self.path != '/api/v1/meals':
-                self.send_response(NOT_FOUND)
+                self.send_response(config.NOT_FOUND)
                 self.end_headers()
                 return
 
-            content_length = int(self.headers[HEADER_LENGTH])
+            content_length = int(self.headers[config.HEADER_LENGTH])
             body = self.rfile.read(content_length)
             info = json.loads(body)
 
             if 'user_id' not in info or 'description' not in info:
-                self.send_response(BAD_REQUEST)
-                self.send_header(HEADER_TYPE, JSON_TYPE)
+                self.send_response(config.BAD_REQUEST)
+                self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
                 response = {
                     'error': 'Invalid request, missing user_id or description',
@@ -54,8 +53,8 @@ def nutrition_handler_factory(
             try:
                 nutrition_info = nutrition_provider.get_nutrition(meal_description=description)
             except Exception as err:
-                self.send_response(BAD_REQUEST)
-                self.send_header(HEADER_TYPE, JSON_TYPE)
+                self.send_response(config.BAD_REQUEST)
+                self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
                 response = {
                     'error': 'Server did not recognize the request.',
@@ -72,13 +71,13 @@ def nutrition_handler_factory(
             )
 
             if response['status'] == 'error':
-                self.send_response(INTERNAL_SERVER_ERROR)
-                self.send_header(HEADER_TYPE, JSON_TYPE)
+                self.send_response(config.INTERNAL_SERVER_ERROR)
+                self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
                 self.wfile.write(json.dumps(response).encode('utf-8'))
                 return
-            self.send_response(OK)
-            self.send_header(HEADER_TYPE, JSON_TYPE)
+            self.send_response(config.OK)
+            self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
             self.end_headers()
             response = {"calories": nutrition_info.calories}
             self.wfile.write(json.dumps(response).encode('utf-8'))
@@ -89,8 +88,8 @@ def nutrition_handler_factory(
                 user_id = query_components.get('user_id', [None])[0]
 
                 if not user_id:
-                    self.send_response(BAD_REQUEST)
-                    self.send_header(HEADER_TYPE, JSON_TYPE)
+                    self.send_response(config.BAD_REQUEST)
+                    self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                     self.end_headers()
                     response = {'error': 'Missing user_id parameter'}
                     self.wfile.write(json.dumps(response).encode('utf-8'))
@@ -99,14 +98,14 @@ def nutrition_handler_factory(
                 meals = nutrition_repository.get_meals_for_last_week(user_id)
 
                 if isinstance(meals, dict) and meals.get('status') == 'error':
-                    self.send_response(INTERNAL_SERVER_ERROR)
-                    self.send_header(HEADER_TYPE, JSON_TYPE)
+                    self.send_response(config.INTERNAL_SERVER_ERROR)
+                    self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                     self.end_headers()
                     self.wfile.write(json.dumps(meals).encode('utf-8'))
                     return
 
                 if not meals:
-                    self.send_response(NOT_FOUND)
+                    self.send_response(config.NOT_FOUND)
                     self.end_headers()
                     return
 
@@ -125,21 +124,21 @@ def nutrition_handler_factory(
                 try:
                     recommendations = nutrition_provider.get_recommendations(past_data)
                 except Exception as err:
-                    self.send_response(INTERNAL_SERVER_ERROR)
-                    self.send_header(HEADER_TYPE, JSON_TYPE)
+                    self.send_response(config.INTERNAL_SERVER_ERROR)
+                    self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                     self.end_headers()
                     response = {'error': 'Error fetching recommendations', 'details': str(err)}
                     self.wfile.write(json.dumps(response).encode('utf-8'))
                     return
 
-                self.send_response(OK)
-                self.send_header(HEADER_TYPE, JSON_TYPE)
+                self.send_response(config.OK)
+                self.send_header(config.HEADER_TYPE, config.JSON_TYPE)
                 self.end_headers()
                 response = {"recommendations": recommendations}
                 self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
                 return
 
-            self.send_response(NOT_FOUND)
+            self.send_response(config.NOT_FOUND)
             self.end_headers()
             return
 
