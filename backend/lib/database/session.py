@@ -94,10 +94,9 @@ class NutritionRepository(BaseNutritionRepository):
         session = self.session()
         try:
             one_week_ago = datetime.now() - timedelta(days=7)
-            meals = session.query(Meal).filter(
+            return session.query(Meal).filter(
                 Meal.user_id == user_id, Meal.created_date >= one_week_ago.date(),
             ).all()
-            return meals
         except Exception as err:
             return {
                 'status': 'error',
