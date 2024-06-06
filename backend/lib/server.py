@@ -45,10 +45,7 @@ def nutrition_handler_factory(
 
             user_id = meal_info['user_id']
             description = meal_info['description']
-            if 'created_date' in meal_info:
-                created_date = meal_info['created_date']
-            else:
-                created_date = datetime.datetime.now()
+            created_date = meal_info.get('created_date', datetime.datetime.now())
 
             try:
                 nutrition_info = nutrition_provider.get_nutrition(meal_description=description)
