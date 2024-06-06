@@ -1,22 +1,23 @@
 """HTTP nutrition server."""
-import datetime 
+import datetime
 import json
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
-from lib.database.session import BaseNutritionRepository
 from lib.config import (BAD_REQUEST, HEADER_LENGTH, HEADER_TYPE,
                         INTERNAL_SERVER_ERROR, JSON_TYPE, NOT_FOUND, OK)
-from lib.service.interfaces.nutrition import NutritionProvider
-from lib.database.models import Meal
+from lib.database.session import BaseNutritionRepository
 from lib.service.interfaces import nutrition
 
 
-def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_repository: BaseNutritionRepository):
+def nutrition_handler_factory(
+        nutrition_provider: nutrition.NutritionProvider,
+        nutrition_repository: BaseNutritionRepository,
+):
     """Create class NutritionerHandler.
 
     Args:
-        nutrition_provider (NutritionProvider): class that provides interface.
+        nutrition_provider (nutrition.NutritionProvider): class that provides interface.
         nutrition_repository (BaseNutritionRepository): class that provides interface.
 
     Returns:
@@ -51,8 +52,7 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                 created_date = datetime.datetime.now()
 
             try:
-                nutrition_info = nutrition_provider.get_nutrition(
-                    meal_description=description)
+                nutrition_info = nutrition_provider.get_nutrition(meal_description=description)
             except Exception as err:
                 self.send_response(BAD_REQUEST)
                 self.send_header(HEADER_TYPE, JSON_TYPE)
@@ -105,14 +105,19 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
                     self.wfile.write(json.dumps(meals).encode('utf-8'))
                     return
 
-                if not meals: 
+                if not meals:
                     self.send_response(NOT_FOUND)
                     self.end_headers()
                     return
 
                 past_data = [
                     nutrition.NutritionInfo(
-                        calories=sum([meal.calories for meal in meals if meal.created_date.date() == datetime.datetime.now().date()-datetime.timedelta(days=day)])
+                        calories=sum(
+                            [
+                                meal.calories for meal in meals if meal.created_date.date()
+                                == datetime.datetime.now().date() - datetime.timedelta(days=day)
+                            ],
+                        ),
                     ) for day in range(7)
                 ]
                 past_data = [n if n.calories else None for n in past_data]
@@ -143,13 +148,14 @@ def nutrition_handler_factory(nutrition_provider: NutritionProvider, nutrition_r
 
 def run(
     nutrition_repository: BaseNutritionRepository,
-    nutrition_provider: NutritionProvider,
+    nutrition_provider: nutrition.NutritionProvider,
     server_class=HTTPServer, port=8000,
 ):
     """Start the server.
 
     Args:
-        nutrition_provider (NutritionProvider): class that provides interface.
+        nutrition_repository (BaseNutritionRepository): class that provides interface.
+        nutrition_provider (nutrition.NutritionProvider): class that provides interface.
         server_class (_type_, optional): defaults to HTTPServer.
         port (int, optional): port for server. Defaults to 8000.
     """
