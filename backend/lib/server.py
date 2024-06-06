@@ -119,7 +119,7 @@ def nutrition_handler_factory(
                         ),
                     ) for day in range(7)
                 ]
-                past_data = [n if n.calories else None for n in past_data]
+                past_data = [inform if inform.calories else None for inform in past_data]
 
                 try:
                     recommendations = nutrition_provider.get_recommendations(past_data)

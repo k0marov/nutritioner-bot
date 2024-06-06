@@ -71,8 +71,10 @@ class NutritionProviderImpl(nutrition.NutritionProvider):
         body = json.dumps(
             {"model": self.ollama_model, "prompt": prompt, "stream": False, "format": "json"},
         )
-        r = requests.post(f'{self.ollama_url}/api/generate', data=body, timeout=config.TIMEOUT)
-        resp = json.loads(r.json()["response"])
+        request = requests.post(
+            f'{self.ollama_url}/api/generate', data=body, timeout=config.TIMEOUT,
+        )
+        resp = json.loads(request.json()["response"])
         calories = resp["kilocalories"]
         if calories == 0:
             raise LLMException()
@@ -88,7 +90,9 @@ class NutritionProviderImpl(nutrition.NutritionProvider):
             str: The dietary recommendations.
         """
         prompt = GET_RECOMMENDATIONS_PROMPT.replace(
-            '[[INPUT]]', str([d.__dict__ if d is not None else None for d in past_data]),
+            '[[INPUT]]', str(
+                [inform.__dict__ if inform is not None else None for inform in past_data],
+            ),
         )
         body = json.dumps({"model": self.ollama_model, "prompt": prompt, "stream": False})
         request = requests.post(
