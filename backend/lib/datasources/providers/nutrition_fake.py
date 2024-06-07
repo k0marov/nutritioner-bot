@@ -1,7 +1,8 @@
 """File with FakeNutritionProvider."""
 
-from lib import config
 from lib.service.interfaces import nutrition
+
+CALORIES500 = 500
 
 
 class FakeNutritionProvider(nutrition.NutritionProvider):
@@ -19,7 +20,7 @@ class FakeNutritionProvider(nutrition.NutritionProvider):
         Returns:
             nutrition.NutritionInfo: A fake NutritionInfo object with calories set to 500.0.
         """
-        return nutrition.NutritionInfo(calories=config.CAL500)
+        return nutrition.NutritionInfo(calories=CALORIES500)
 
     def get_recommendations(self, past_data: list[nutrition.NutritionInfo]) -> str:
         """Mock implementation of the get_recommendations method.
