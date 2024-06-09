@@ -4,6 +4,7 @@
 import abc
 from datetime import date, datetime, timedelta
 
+from lib import config
 from lib.database.models import Meal
 
 
@@ -17,7 +18,6 @@ class BaseNutritionRepository(abc.ABC):
         Args:
             session (_type_): SessionLocal.
         """
-        pass
 
     @abc.abstractmethod
     def insert_meal(self, user_id: str, description: str, calories: float) -> dict:
@@ -27,11 +27,7 @@ class BaseNutritionRepository(abc.ABC):
             user_id (str): ID of the user.
             description (str): description of the meal.
             calories (float): number of calories in the meal.
-
-        Returns:
-            dict: response indicating failure.
         """
-        pass
 
     @abc.abstractmethod
     def get_meals_for_last_week(self, user_id: str):
@@ -39,11 +35,7 @@ class BaseNutritionRepository(abc.ABC):
 
         Args:
             user_id (str): ID of the user.
-
-        Returns:
-            list: list of meals.
         """
-        pass
 
 
 class NutritionRepository(BaseNutritionRepository):
@@ -58,6 +50,17 @@ class NutritionRepository(BaseNutritionRepository):
         self.session = session
 
     def insert_meal(self, user_id: str, description: str, calories: float, created_date: date):
+        """Insert a new meal entry into the database.
+
+        Args:
+            user_id (str): The ID of the user for whom to insert the meal.
+            description (str): The description of the meal.
+            calories (float): The number of calories in the meal.
+            created_date (date): The date when the meal was created.
+
+        Returns:
+            dict: A dictionary indicating the status of the operation.
+        """
         session = self.session()
         try:
             meal = Meal(
@@ -72,25 +75,34 @@ class NutritionRepository(BaseNutritionRepository):
         except Exception as err:
             session.rollback()
             return {
-                'status': 'error',
-                'error': 'Database error',
-                'details': str(err)
+                'status': config.ERROR,
+                config.ERROR: 'Database error',
+                'details': str(err),
             }
         finally:
             session.close()
 
     def get_meals_for_last_week(self, user_id: str):
+        """Retrieve meals for the last week for a given user.
+
+        Args:
+            user_id (str): The ID of the user for whom to retrieve meals.
+
+        Returns:
+            list[Meal] or dict: A list of Meal objects representing the meals for the last week,
+            or a dictionary with an error message if an error occurs during database retrieval.
+        """
         session = self.session()
         try:
             one_week_ago = datetime.now() - timedelta(days=7)
-            meals = session.query(Meal).filter(
-                Meal.user_id == user_id, Meal.created_date >= one_week_ago.date()).all()
-            return meals
+            return session.query(Meal).filter(
+                Meal.user_id == user_id, Meal.created_date >= one_week_ago.date(),
+            ).all()
         except Exception as err:
             return {
-                'status': 'error',
-                'error': 'Database error',
-                'details': str(err)
+                'status': config.ERROR,
+                config.ERROR: 'Database error',
+                'details': str(err),
             }
         finally:
             session.close()
