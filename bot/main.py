@@ -30,7 +30,9 @@ async def _command_start_handler(message: Message) -> None:
 @dp.message(Command('recommendations'))
 async def _recommendations_handler(message: Message) -> None:
     user_id = message.from_user.id
+    wait_msg = await message.answer('Генерируем ответ...')
     resp = requests.get(f'{BASE_URL}/api/v1/stats', params={'user_id': user_id})
+    await wait_msg.delete()
     if resp.status_code != STATUS_OK:
         return await message.answer('Произошла ошибка')
     return await message.answer(resp.json()['recommendations'])
@@ -43,12 +45,14 @@ async def _meal_handler(message: Message) -> None:
     if not description:
         return await message.answer('Пожалуйста, введите текстовое описание')
     body = json.dumps({'description': description, 'user_id': user_id})
+    wait_msg = await message.answer('Генерируем ответ...')
     resp = requests.post(f'{BASE_URL}/api/v1/meals', data=body)
+    await wait_msg.delete()
     if resp.status_code != STATUS_OK:
         if resp.status_code == STATUS_BAD_REQUEST:
             return await message.answer('Неверный запрос')
         return await message.answer('Произошла ошибка, попробуйте позже')
-    calories = float(resp.json()['calories'])
+    calories = int(resp.json()['calories'])
     await message.answer(f'{calories} калорий.')
 
 
