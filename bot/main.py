@@ -40,11 +40,10 @@ async def _recommendations_handler(message: Message) -> None:
 
 @dp.message()
 async def _meal_handler(message: Message) -> None:
-    user_id = message.from_user.id
     description = message.text
     if not description:
         return await message.answer('Пожалуйста, введите текстовое описание')
-    body = json.dumps({'description': description, 'user_id': user_id})
+    body = json.dumps({'description': description, 'user_id': message.from_user.id})
     wait_msg = await message.answer('Генерируем ответ...')
     resp = requests.post(f'{BASE_URL}/api/v1/meals', data=body)
     await wait_msg.delete()
