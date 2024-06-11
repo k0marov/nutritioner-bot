@@ -3,11 +3,13 @@
 import unittest
 from datetime import datetime, timedelta
 
-from lib.database.models import Base, Meal
 
-from lib.database.session import NutritionRepository
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+from lib.database.models import Base, Meal
+from lib.database.session import NutritionRepository
+
 
 DATABASE_URL = "sqlite:///:memory:"
 
